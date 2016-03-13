@@ -164,7 +164,7 @@ def RebootDevice(sock, verbose=False):
 	"""
 	if verbose:
 		print "Rebooting Device"
-	returnText = SendCommandAndCheckResponse(sock, "node.restart()",  "")
+	returnText = SendCommandAndCheckResponse(sock, "tmr.alarm(0, 1000, tmr.ALARM_SINGLE, node.restart)",  "")
 	if returnText == None:
 		#It seems that we could remove the file.
 		return True
