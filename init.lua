@@ -15,6 +15,11 @@
 gpio.mode(0, gpio.INPUT, gpio.PULLUP)
 
 local runMainApp = (gpio.read(0) == 1)
+if file.list()["bootUpgrader"] then
+	file.remove("bootUpgrader")
+	runMainApp = false
+end
+
 local runFirmwareUpgrader = (runMainApp == false)
 
 --Should be passed the name of the script that is either a .lc or .lua without the extension.
@@ -30,17 +35,16 @@ if runMainApp then
 	--Button is not pressed. Try to load the main application.
 	print("Loading main application.")
 
-	main_lua, mainErrorText = loadLuaOrLCFile("main")
+	mainFunc, mainErrorText = loadLuaOrLCFile("main")
 
-	if main_lua then
-		print("Loading main.lc")
-		if not tmr.alarm(0, 2000, tmr.ALARM_SINGLE, main_lua) then
+	if mainFunc then
+		if not tmr.alarm(0, 2000, tmr.ALARM_SINGLE, mainFunc) then
 			print("Unable to start timer for main application!")
 		end
 	else
 		--Something went wrong in loading the application
 		--We will run the firmware upgrader application.
-		print("Unable to load main.lc")
+		print("Unable to load main")
 		print(mainErrorText)
 		runFirmwareUpgrader = true
 	end
@@ -49,10 +53,9 @@ end
 if runFirmwareUpgrader then
 	print("Running Firmware Upgrader.")
 
-	recovery_lua, recoverErrorText = loadLuaOrLCFile("FirmwareUpgrader")
-	if recovery_lua then
-		print("Booting Recovery")
-		if not tmr.alarm(0, 2000, tmr.ALARM_SINGLE, recovery_lua) then
+	upgraderFunc, recoverErrorText = loadLuaOrLCFile("FirmwareUpgrader")
+	if upgraderFunc then
+		if not tmr.alarm(0, 2000, tmr.ALARM_SINGLE, upgraderFunc) then
 			print("Unable to start timer for firmware upgrader application!")
 		end
 	else
