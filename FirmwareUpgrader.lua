@@ -30,9 +30,6 @@ wifi.ap.setip(ipCfg)
 tmr.alarm(0, 1000, 1, function()
 	 if wifi.ap.getip() ~= nil then
 		ip, netmask, gateway = wifi.ap.getip()
-		print("IP Address: " .. ip .. "\n")
-		print("Netmask: " .. netmask .. "\n")
-		print("Gateway: " .. gateway .. "\n")
 		tmr.stop(0)
 	 end
 end)
