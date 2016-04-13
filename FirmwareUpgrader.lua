@@ -27,13 +27,6 @@ wifi.setmode(wifi.SOFTAP)
 wifi.ap.config(apCfg)
 wifi.ap.setip(ipCfg)
 
-tmr.alarm(0, 1000, 1, function()
-	 if wifi.ap.getip() ~= nil then
-		ip, netmask, gateway = wifi.ap.getip()
-		tmr.stop(0)
-	 end
-end)
-
 --Set up the server to receive files and do anything else.
 local srv = net.createServer(net.TCP, 600)
 
