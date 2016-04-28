@@ -13,6 +13,7 @@
 
 
 --TODO: Consider adding a password option. Maybe it would be there if a password file existed.
+--TODO: Make timeout so this will reboot after a minute or something.
 
 ipCfg = {
 	ip 		= "192.168.4.1",
