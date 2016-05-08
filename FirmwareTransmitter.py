@@ -22,6 +22,7 @@ import sys
 import time
 
 #TODO: Consider adding a way to extract files.
+#TODO: Make it so .lc files are removed when adding a .lua under the same name.
 
 #Defines socket timeout time in seconds.
 SOCKET_TIMEOUT = 5
