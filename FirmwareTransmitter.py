@@ -175,7 +175,7 @@ def RebootDevice(sock, verbose=False):
 		return False
 
 
-def SendFile(sock, files, i, writeSize):
+def SendFile(sock, filePath, fileIndex, fileCount, writeSize):
 	"""
 	Transmits a file to the device.
 	Takes a valid socket connected to device, the list of files, the file index, and the number of bytes to send at a time.
@@ -184,8 +184,7 @@ def SendFile(sock, files, i, writeSize):
 	the "> " has already been received indicating the device is ready for a command.
 	Returns True on success and False otherwise.
 	"""
-	filePath = files[i]
-	print "Transmitting: %s (%i/%i)..." % (filePath, i+1, len(files))
+	print "Transmitting: %s (%i/%i)..." % (filePath, fileIndex+1, fileCount)
 	fileName = os.path.split(filePath)[1]
 	if not fileName:
 		#Something went wrong
@@ -196,8 +195,8 @@ def SendFile(sock, files, i, writeSize):
 	data = None
 	with open(filePath, 'rb') as f:
 		data = ["\%i" % ord(x) for x in f.read()]
-	#Remove the file if it already exists.
 
+	#Remove the file if it already exists.
 	if not RemoveFileOnDevice(sock, fileName, False, True):
 		return False
 
@@ -406,7 +405,7 @@ def main():
 	success = True
 	for i, filePath in enumerate(files):
 		#Send the file
-		if not SendFile(sock, files, i, args.size):
+		if not SendFile(sock, filePath, i, len(files), args.size):
 			print 'Failed to send file!'
 			success = False
 
@@ -418,7 +417,7 @@ def main():
 
 		if not success:
 			print "Failure! Removing potentially broken file."
-			RemoveFileOnDevice(sock, files[i], True, False)
+			RemoveFileOnDevice(sock, os.path.split(files[i])[1], True, False)
 			break
 
 	#If we need to reboot, do that before finishing.
