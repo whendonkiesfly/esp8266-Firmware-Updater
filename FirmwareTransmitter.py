@@ -184,7 +184,7 @@ def SendFile(sock, filePath, fileIndex, fileCount, writeSize):
 	the "> " has already been received indicating the device is ready for a command.
 	Returns True on success and False otherwise.
 	"""
-	print "Transmitting: %s (%i/%i)..." % (filePath, fileIndex+1, fileCount)
+	print "Transmitting: {0} ({1}/{2})... ".format(filePath, fileIndex+1, fileCount),
 	fileName = os.path.split(filePath)[1]
 	if not fileName:
 		#Something went wrong
@@ -208,17 +208,28 @@ def SendFile(sock, filePath, fileIndex, fileCount, writeSize):
 	#Split up file into chunks and send each one.
 	bytesSent = 0
 	success = True
+	lastWritePercentMessage = ""
 	while True:
 		#Get the string to send that is the next up to writeSize bytes long.
-		dataToWrite = ''.join([data[i] for i in xrange(bytesSent, min(bytesSent+writeSize, len(data)))])
-		if not dataToWrite:
+		writeLength = min(writeSize, len(data)-bytesSent)
+		if writeLength <= 0:
 			break
-		bytesSent += writeSize
+		dataToWrite = ''.join([data[i] for i in xrange(bytesSent, bytesSent+writeLength)])
+		if not dataToWrite:
+			#Should not get here
+			print "Failure while parsing file to send!"
+			break
+		bytesSent += writeLength
 		if SendCommandAndCheckResponse(sock, 'file.write("%s")' % dataToWrite, "", True) != None:
 			print "Unable to write to file!"
 			success = False
 			break
 
+		backspaces = "\b"*(len(lastWritePercentMessage)+1)
+		lastWritePercentMessage = "{0}/{1} bytes complete".format(bytesSent, len(data))
+		print backspaces + lastWritePercentMessage,
+
+	print
 	if SendCommandAndCheckResponse(sock, 'file.close()', "", True) != None:
 		print "Unable to close file! Device may need to be reset."
 		return False
