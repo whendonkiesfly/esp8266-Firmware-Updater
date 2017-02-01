@@ -228,6 +228,7 @@ def SendFile(sock, filePath, fileIndex, fileCount, writeSize):
 		backspaces = "\b"*(len(lastWritePercentMessage)+1)
 		lastWritePercentMessage = "{0}/{1} bytes complete".format(bytesSent, len(data))
 		print backspaces + lastWritePercentMessage,
+		sys.stdout.flush()
 
 	print
 	if SendCommandAndCheckResponse(sock, 'file.close()', "", True) != None:
