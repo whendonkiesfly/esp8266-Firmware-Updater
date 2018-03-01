@@ -35,6 +35,8 @@ DEVICE_CONNECTION_RESPONSE = "Firmware Upgrader\n\r"
 #Defines the names of files on the device that must not be deleted.
 VITAL_DEVICE_FILE_LIST = ["init.lua", "init.lc", "FirmwareUpgrader.lua", "FirmwareUpgrader.lc"]
 
+#Defines the maximum number of tries to send a file.
+FILE_RETRY_COUNT = 3
 
 
 def InitializeDeviceConnection(address, port):
@@ -417,19 +419,30 @@ def main():
 	success = True
 	for i, filePath in enumerate(files):
 		#Send the file
-		if not SendFile(sock, filePath, i, len(files), args.size):
-			print 'Failed to send file!'
+		for i in range(FILE_RETRY_COUNT):
+			file_success = True
+			if not SendFile(sock, filePath, i, len(files), args.size):
+				print 'Failed to send file!'
+				file_success = False
+
+			#If the file is a .lua file and we need to compile it, compile the file then remove the .lua.
+			if args.compile and file_success:
+				if filePath.endswith(".lua"):
+					if not CompileAndRemoveLuaSource(sock, files, i):
+						file_success = False
+
+			if file_success:
+				break
+			else:
+				print "Failure! Removing potentially broken file."
+				RemoveFileOnDevice(sock, os.path.split(files[i])[1], True, False)
+				print "Retrying transmit..."
+		else:
+			#We failed too many times
 			success = False
 
-		#If the file is a .lua file and we need to compile it, compile the file then remove the .lua.
-		if args.compile and success:
-			if filePath.endswith(".lua"):
-				if not CompileAndRemoveLuaSource(sock, files, i):
-					success = False
-
 		if not success:
-			print "Failure! Removing potentially broken file."
-			RemoveFileOnDevice(sock, os.path.split(files[i])[1], True, False)
+			print "Failed to send file after max retry count"
 			break
 
 	#If we need to reboot, do that before finishing.
