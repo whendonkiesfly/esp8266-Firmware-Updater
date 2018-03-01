@@ -419,7 +419,7 @@ def main():
 	success = True
 	for i, filePath in enumerate(files):
 		#Send the file
-		for i in range(FILE_RETRY_COUNT):
+		for _ in range(FILE_RETRY_COUNT):
 			file_success = True
 			if not SendFile(sock, filePath, i, len(files), args.size):
 				print 'Failed to send file!'
